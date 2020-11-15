@@ -27,10 +27,10 @@ func Run() {
 	Config(&cfg)
 	fmt.Println("Config")
 	fmt.Println("----------------")
-	fmt.Printf("elasticsearch \t: %s\n", cfg.Elasticsearch)
-	fmt.Printf("kibana \t\t: %s\n", cfg.Kibana)
-	fmt.Printf("index-pattern \t: %s\n", cfg.IndexPattern)
-	fmt.Printf("kibana max page : %s\n", cfg.KibanaMaxPage)
+	fmt.Printf("elasticsearch \t: %s\n", cfg.Elasticsearch.Host)
+	fmt.Printf("kibana \t\t: %s\n", cfg.Kibana.Host)
+	fmt.Printf("index-pattern \t: %s\n", cfg.Elasticsearch.IndexPattern)
+	fmt.Printf("kibana max page : %s\n", cfg.Kibana.MaxPage)
 	fmt.Printf("interval \t: %s minutes\n\n", cfg.Interval)
 
 	intInterval, _ := strconv.ParseInt(cfg.Interval, 10, 64)
@@ -72,8 +72,12 @@ func createIndexPattern(slice []string) {
 	log.Info("create index pattern: ")
 	client := resty.New()
 
+	if cfg.Kibana.Auth {
+		client.SetBasicAuth(cfg.Kibana.User, cfg.Kibana.Password)
+	}
+
 	for _, item := range slice {
-		url := cfg.Kibana + "/api/saved_objects/index-pattern/" + item
+		url := cfg.Kibana.Host + "/api/saved_objects/index-pattern/" + item
 
 		attributes := Attributes{
 			Title:         item + "-*",
@@ -99,9 +103,14 @@ func createIndexPattern(slice []string) {
 }
 
 func getIndices() []string {
-	url := cfg.Elasticsearch + "/_cat/indices?format=json"
+	url := cfg.Elasticsearch.Host + "/_cat/indices?format=json"
 
 	client := resty.New()
+
+	if cfg.Elasticsearch.Auth {
+		client.SetBasicAuth(cfg.Elasticsearch.User, cfg.Elasticsearch.Password)
+	}
+
 	resp, err := client.R().Get(url)
 
 	if err != nil {
@@ -112,7 +121,7 @@ func getIndices() []string {
 	json.Unmarshal(resp.Body(), &esIndex)
 
 	list := []string{}
-	re, _ := regexp.Compile(cfg.IndexPattern)
+	re, _ := regexp.Compile("^" + cfg.Elasticsearch.IndexPattern)
 
 	for _, index := range esIndex {
 		matched := re.MatchString(index.Index)
@@ -128,9 +137,14 @@ func getIndices() []string {
 }
 
 func getIndexPatterns() []string {
-	url := cfg.Kibana + "/api/saved_objects/_find?type=index-pattern&per_page=" + cfg.KibanaMaxPage
+	url := cfg.Kibana.Host + "/api/saved_objects/_find?type=index-pattern&per_page=" + cfg.Kibana.MaxPage
 
 	client := resty.New()
+
+	if cfg.Kibana.Auth {
+		client.SetBasicAuth(cfg.Kibana.User, cfg.Kibana.Password)
+	}
+
 	resp, err := client.R().Get(url)
 
 	if err != nil {
@@ -142,10 +156,10 @@ func getIndexPatterns() []string {
 
 	list := []string{}
 
-	ip := strings.Split(cfg.IndexPattern, "-")
+	ip := strings.Split(cfg.Elasticsearch.IndexPattern, "-")
 	ipClean := strings.Join(ip[:len(ip)-1], "-")
 
-	re, _ := regexp.Compile(cfg.IndexPattern)
+	re, _ := regexp.Compile(cfg.Elasticsearch.IndexPattern)
 
 	for _, object := range esIndexPattern.SavedObjects {
 		matched := re.MatchString(object.Attributes.Title)

@@ -4,11 +4,21 @@ import "time"
 
 // Conf for rundeck job manifest Conf data type
 type Conf struct {
-	Elasticsearch string `yaml:"elasticsearch"`
-	Kibana        string `yaml:"kibana"`
-	IndexPattern  string `yaml:"indexPattern"`
-	KibanaMaxPage string `yaml:"kibanaMaxPage"`
-	Interval      string `yaml:"interval"`
+	Elasticsearch struct {
+		Host         string `yaml:"host"`
+		IndexPattern string `yaml:"indexPattern"`
+		Auth         bool   `yaml:"auth"`
+		User         string `yaml:"user"`
+		Password     string `yaml:"password"`
+	} `yaml:"elasticsearch"`
+	Kibana struct {
+		Host     string `yaml:"host"`
+		MaxPage  string `yaml:"maxPage"`
+		Auth     bool   `yaml:"auth"`
+		User     string `yaml:"user"`
+		Password string `yaml:"password"`
+	} `yaml:"kibana"`
+	Interval string `yaml:"interval"`
 }
 
 // Attributes for attributes body
