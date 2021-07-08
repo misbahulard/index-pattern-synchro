@@ -1,7 +1,7 @@
 package main
 
 import (
-	"index-pattern-synchro/pkg/synchro/cmd"
+	"github.com/misbahulard/index-pattern-synchro/pkg/synchro/cmd"
 )
 
 func main() {
