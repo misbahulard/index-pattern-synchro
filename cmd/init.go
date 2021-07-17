@@ -63,27 +63,32 @@ func generateConfig() {
 	// generate config from struct
 	cfg := config.Config{
 		Interval: "15m",
-		Log: config.ConfigLog{
+		Log: config.Log{
 			Debug: false,
-			File: config.ConfigFile{
+			File: config.File{
 				Enable: false,
 				Path:   "default.log",
 			},
 		},
-		Elasticsearch: config.ConfigElasticsearch{
+		Elasticsearch: config.Elasticsearch{
 			Host:                       "http://localhost:9200",
 			SslCertificateVerification: false,
-			Auth: config.ConfigAuth{
+			Auth: config.Auth{
 				Enable:   false,
 				Username: "elastic",
 				Password: "secret",
 			},
-			Indices: []string{"*"},
+			Indices: []config.Index{
+				config.Index{
+					Name:            "*",
+					RolloverPattern: "[0-9]{4}.[0-9]{2}.[0-9]{2}",
+				},
+			},
 		},
-		Kibana: config.ConfigKibana{
+		Kibana: config.Kibana{
 			Host:                       "http://localhost:5601",
 			SslCertificateVerification: false,
-			Auth: config.ConfigAuth{
+			Auth: config.Auth{
 				Enable:   false,
 				Username: "elastic",
 				Password: "secret",

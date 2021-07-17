@@ -15,38 +15,67 @@ limitations under the License.
 */
 package config
 
-type ConfigFile struct {
-	Enable bool   `yaml:"enable"`
-	Path   string `yaml:"path"`
+type File struct {
+	Enable bool   `mapstructure:"enable"`
+	Path   string `mapstructure:"path"`
 }
 
-type ConfigLog struct {
-	Debug bool       `yaml:"debug"`
-	File  ConfigFile `yaml:"file"`
+type Log struct {
+	Debug bool `mapstructure:"debug"`
+	File  File `mapstructure:"file"`
 }
 
-type ConfigAuth struct {
-	Enable   bool   `yaml:"enable"`
-	Username string `yaml:"username"`
-	Password string `yaml:"password"`
+type Auth struct {
+	Enable   bool   `mapstructure:"enable"`
+	Username string `mapstructure:"username"`
+	Password string `mapstructure:"password"`
 }
 
-type ConfigElasticsearch struct {
-	Host                       string     `yaml:"host"`
-	SslCertificateVerification bool       `yaml:"ssl_certificate_verification"`
-	Auth                       ConfigAuth `yaml:"auth"`
-	Indices                    []string   `yaml:"indices"`
+type Index struct {
+	Name            string `mapstructure:"name"`
+	RolloverPattern string `mapstructure:"rollover_pattern"`
 }
 
-type ConfigKibana struct {
-	Host                       string     `yaml:"host"`
-	SslCertificateVerification bool       `yaml:"ssl_certificate_verification"`
-	Auth                       ConfigAuth `yaml:"auth"`
+type Elasticsearch struct {
+	Host                       string  `mapstructure:"host"`
+	SslCertificateVerification bool    `mapstructure:"ssl_certificate_verification"`
+	Auth                       Auth    `mapstructure:"auth"`
+	Indices                    []Index `mapstructure:"indices"`
+}
+
+type Kibana struct {
+	Host                       string `mapstructure:"host"`
+	SslCertificateVerification bool   `mapstructure:"ssl_certificate_verification"`
+	Auth                       Auth   `mapstructure:"auth"`
+}
+
+type Tenant struct {
+	Name      string `mapstructure:"name"`
+	Pattern   string `mapstructure:"pattern"`
+	Timestamp string `mapstructure:"timestamp"`
+}
+
+type Opendistro struct {
+	Enable  bool     `mapstructure:"enable"`
+	Tenants []Tenant `mapstructure:"tenants"`
+}
+
+type Space struct {
+	Name      string `mapstructure:"name"`
+	Pattern   string `mapstructure:"pattern"`
+	Timestamp string `mapstructure:"timestamp"`
+}
+
+type Xpack struct {
+	Enable bool    `mapstructure:"enable"`
+	Spaces []Space `mapstructure:"spaces"`
 }
 
 type Config struct {
-	Interval      string              `yaml:"interval"`
-	Log           ConfigLog           `yaml:"log"`
-	Elasticsearch ConfigElasticsearch `yaml:"elasticsearch"`
-	Kibana        ConfigKibana        `yaml:"kibana"`
+	Interval      string        `mapstructure:"interval"`
+	Log           Log           `mapstructure:"log"`
+	Elasticsearch Elasticsearch `mapstructure:"elasticsearch"`
+	Kibana        Kibana        `mapstructure:"kibana"`
+	Xpack         Xpack         `mapstructure:"xpack"`
+	Opendistro    Opendistro    `mapstructure:"opendistro"`
 }
