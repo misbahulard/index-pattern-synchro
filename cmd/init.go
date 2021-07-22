@@ -72,7 +72,7 @@ func generateConfig() {
 		},
 		Elasticsearch: config.Elasticsearch{
 			Host:                       "http://localhost:9200",
-			SslCertificateVerification: false,
+			SslCertificateVerification: true,
 			Auth: config.Auth{
 				Enable:   false,
 				Username: "elastic",
@@ -87,7 +87,7 @@ func generateConfig() {
 		},
 		Kibana: config.Kibana{
 			Host:                       "http://localhost:5601",
-			SslCertificateVerification: false,
+			SslCertificateVerification: true,
 			Auth: config.Auth{
 				Enable:   false,
 				Username: "elastic",
@@ -101,11 +101,13 @@ func generateConfig() {
 	out, err := yaml.Marshal(cfg)
 	if err != nil {
 		fmt.Printf("An error occured when marshal to yaml: %s\n", err)
+		os.Exit(1)
 	}
 
 	err = ioutil.WriteFile(destination, out, 0644)
 	if err != nil {
 		fmt.Printf("An error occured when write file: %s\n", err)
+		os.Exit(1)
 	}
 
 	fmt.Println("[ok]")

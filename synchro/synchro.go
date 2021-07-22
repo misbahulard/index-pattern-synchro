@@ -44,6 +44,8 @@ func job() {
 		os.Exit(1)
 	}
 
+	// log.Debug(esIndex)
+
 	kibanaSpaces := []Space{}
 	if viper.GetBool("xpack.enable") {
 		log.Info("Get Kibana spaces")

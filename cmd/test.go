@@ -36,9 +36,6 @@ var testCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(testCmd)
-
-	testCmd.Flags().BoolVar(&debug, "debug", false, "Enable debug log level.")
-	viper.BindPFlag("log.debug", testCmd.Flags().Lookup("debug"))
 }
 
 func test() {

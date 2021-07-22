@@ -33,19 +33,19 @@ type Auth struct {
 
 type Index struct {
 	Name            string `mapstructure:"name"`
-	RolloverPattern string `mapstructure:"rollover_pattern"`
+	RolloverPattern string `mapstructure:"rollover_pattern" yaml:"rollover_pattern"`
 }
 
 type Elasticsearch struct {
 	Host                       string  `mapstructure:"host"`
-	SslCertificateVerification bool    `mapstructure:"ssl_certificate_verification"`
+	SslCertificateVerification bool    `mapstructure:"ssl_certificate_verification" yaml:"ssl_certificate_verification"`
 	Auth                       Auth    `mapstructure:"auth"`
 	Indices                    []Index `mapstructure:"indices"`
 }
 
 type Kibana struct {
 	Host                       string `mapstructure:"host"`
-	SslCertificateVerification bool   `mapstructure:"ssl_certificate_verification"`
+	SslCertificateVerification bool   `mapstructure:"ssl_certificate_verification" yaml:"ssl_certificate_verification"`
 	Auth                       Auth   `mapstructure:"auth"`
 }
 
