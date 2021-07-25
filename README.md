@@ -74,6 +74,8 @@ docker built -f build/Dockerfile -t index-pattern-synchro:latest .
 docker run --rm --name index-pattern-synchro --mount type=bind,source="$(pwd)"/config.yaml,target=/app/config.yaml index-pattern-synchro
 ```
 
+*Prebuild docker images exist in my docker hub [here](https://hub.docker.com/r/misbahulard/index-pattern-synchro).*
+
 ## Run
 
 For running this app, you just need to execute the binary or run the container.
