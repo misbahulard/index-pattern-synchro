@@ -11,6 +11,7 @@ tmp/
 
 # Ignore 'config.yaml' for testing
 config.yaml
+!example/*
 
 # Binaries for programs and plugins
 *.exe
