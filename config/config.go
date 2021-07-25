@@ -21,8 +21,9 @@ type File struct {
 }
 
 type Log struct {
-	Debug bool `mapstructure:"debug"`
-	File  File `mapstructure:"file"`
+	Debug bool   `mapstructure:"debug"`
+	Type  string `mapstructure:"type"`
+	File  File   `mapstructure:"file"`
 }
 
 type Auth struct {

@@ -1,0 +1,13 @@
+[Unit]
+Description=Index Pattern Synchro Service
+StartLimitIntervalSec=500
+StartLimitBurst=5
+
+[Service]
+User=root
+ExecStart=/usr/local/bin/index-pattern-synchro
+Restart=on-failure
+RestartSec=5s
+
+[Install]
+WantedBy=multi-user.target

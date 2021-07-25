@@ -17,6 +17,7 @@ package synchro
 
 import (
 	"crypto/tls"
+	"os"
 	"regexp"
 
 	"github.com/go-resty/resty/v2"
@@ -79,6 +80,7 @@ func getKibanaSpaces(esIndices []string) []Space {
 	err := viper.Unmarshal(&cfg)
 	if err != nil {
 		log.Errorf("An error occured when unmarshal: %s", err)
+		os.Exit(1)
 	}
 
 	spaces := []Space{}
@@ -96,6 +98,7 @@ func getKibanaSpaces(esIndices []string) []Space {
 			re, err := regexp.Compile(checkAndFixRegex(s.Pattern))
 			if err != nil {
 				log.Errorf("An error occured when compile regex pattern for index name: %s", err)
+				os.Exit(1)
 			}
 
 			matched := re.FindAll([]byte(index), -1)
@@ -119,6 +122,7 @@ func getKibanaTenants(esIndices []string) []Tenant {
 	err := viper.Unmarshal(&cfg)
 	if err != nil {
 		log.Errorf("An error occured when unmarshal: %s", err)
+		os.Exit(1)
 	}
 
 	tenants := []Tenant{}
@@ -136,6 +140,7 @@ func getKibanaTenants(esIndices []string) []Tenant {
 			re, err := regexp.Compile(checkAndFixRegex(s.Pattern))
 			if err != nil {
 				log.Errorf("An error occured when compile regex pattern for index name: %s", err)
+				os.Exit(1)
 			}
 
 			matched := re.FindAll([]byte(index), -1)
@@ -152,6 +157,74 @@ func getKibanaTenants(esIndices []string) []Tenant {
 
 	log.Debugf("tenants: %+v", tenants)
 	return tenants
+}
+
+func kibanaXpackSavedObjectBulkCreate(data []Space) {
+	client := resty.New().
+		SetTLSClientConfig(&tls.Config{
+			InsecureSkipVerify: !viper.GetBool("kibana.ssl_certificate_verification"),
+		})
+
+	if viper.GetBool("kibana.auth.enable") {
+		client.SetBasicAuth(viper.GetString("kibana.auth.username"), viper.GetString("kibana.auth.password"))
+	}
+
+	for _, space := range data {
+		savedObjectPayloads := []SavedObjectPayload{}
+		for _, index := range space.Indices {
+			savedObjectPayload := SavedObjectPayload{}
+			savedObjectPayload.Type = "index-pattern"
+			savedObjectPayload.ID = index
+			savedObjectPayload.Attributes.TimeFieldName = space.Timestamp
+			savedObjectPayload.Attributes.Title = index + "*"
+			savedObjectPayloads = append(savedObjectPayloads, savedObjectPayload)
+		}
+
+		// do http request
+		url := viper.GetString("kibana.host") + "/api/saved_objects/_bulk_create"
+
+		if space.Name != "global" {
+			url = viper.GetString("kibana.host") + "/s/" + space.Name + "/api/saved_objects/_bulk_create"
+		}
+
+		log.Infof("Space: %s", space.Name)
+		log.Debugf("Http header: %s", "kbn-xsrf:true")
+		log.Debugf("Http payload: %+v", savedObjectPayloads)
+
+		result := SavedObjectResponse{}
+
+		resp, err := client.R().
+			SetHeader("kbn-xsrf", "true").
+			SetBody(savedObjectPayloads).
+			SetResult(&result).
+			Post(url)
+
+		if err != nil {
+			log.Fatalln(err)
+			os.Exit(1)
+		}
+
+		if resp.StatusCode() != 200 {
+			log.Errorf("An error occured when create saved objects, got http %d status code", resp.StatusCode())
+			log.Errorf("Response: %s", resp.Body())
+			os.Exit(1)
+		}
+
+		soConflictList := []string{}
+		for _, v := range result.SavedObjects {
+			if (v.Error != Error{}) {
+				if v.Error.StatusCode == 409 {
+					soConflictList = append(soConflictList, v.ID)
+				}
+			}
+		}
+
+		if len(soConflictList) != 0 {
+			log.Warnf("Saved object %s conflict", soConflictList)
+		}
+
+		log.Info("Index pattern has been updated")
+	}
 }
 
 func kibanaOpendistroSavedObjectBulkCreate(data []Tenant) {
@@ -177,11 +250,11 @@ func kibanaOpendistroSavedObjectBulkCreate(data []Tenant) {
 			savedObjectPayloads = append(savedObjectPayloads, savedObjectPayload)
 		}
 
-		// do http request here
-		log.Infof("tenant: %s", tenant.Name)
-		log.Debugf("http header :: %s", "kbn-xsrf:true")
-		log.Debugf("http header :: %s", "securitytenant:"+tenant.Name)
-		log.Debugf("http payload :: %+v", savedObjectPayloads)
+		// do http request
+		log.Infof("Tenant: %s", tenant.Name)
+		log.Debugf("Http header: %s", "kbn-xsrf:true")
+		log.Debugf("Http header: %s", "securitytenant:"+tenant.Name)
+		log.Debugf("Http payload: %+v", savedObjectPayloads)
 
 		result := SavedObjectResponse{}
 
@@ -194,21 +267,28 @@ func kibanaOpendistroSavedObjectBulkCreate(data []Tenant) {
 
 		if err != nil {
 			log.Fatalln(err)
+			os.Exit(1)
 		}
 
 		if resp.StatusCode() != 200 {
 			log.Errorf("An error occured when create saved objects, got http %d status code", resp.StatusCode())
 			log.Errorf("Response: %s", resp.Body())
+			os.Exit(1)
 		}
 
+		soConflictList := []string{}
 		for _, v := range result.SavedObjects {
 			if (v.Error != Error{}) {
 				if v.Error.StatusCode == 409 {
-					log.Warn(v.Error.Message)
+					soConflictList = append(soConflictList, v.ID)
 				}
 			}
 		}
 
-		log.Info(resp.StatusCode())
+		if len(soConflictList) != 0 {
+			log.Warnf("Saved object %s conflict", soConflictList)
+		}
+
+		log.Info("Index pattern has been updated")
 	}
 }

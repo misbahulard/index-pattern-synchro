@@ -3,6 +3,9 @@
 # Edit at https://www.toptal.com/developers/gitignore?templates=go,visualstudiocode
 
 ### Go ###
+# binary
+index-pattern-synchro
+
 # tmp directory
 tmp/
 

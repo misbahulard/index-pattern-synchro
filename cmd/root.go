@@ -61,9 +61,9 @@ func initConfig() {
 		cobra.CheckErr(err)
 
 		// Search config in /etc, /opt, home directory, or current directory with name "config.yaml".
-		viper.AddConfigPath("/etc/synchro/")
-		viper.AddConfigPath("/opt/synchro/")
-		viper.AddConfigPath(home + "/.synchro/")
+		viper.AddConfigPath("/etc/index-pattern-synchro/")
+		viper.AddConfigPath("/opt/index-pattern-synchro/")
+		viper.AddConfigPath(home + "/.index-pattern-synchro/")
 		viper.AddConfigPath(".")
 		viper.SetConfigType("yaml")
 		viper.SetConfigName("config")

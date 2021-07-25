@@ -52,7 +52,7 @@ func job() {
 		kibanaSpaces = getKibanaSpaces(esIndex)
 	}
 
-	log.Debug(kibanaSpaces)
+	kibanaXpackSavedObjectBulkCreate(kibanaSpaces)
 
 	kibanaTenants := []Tenant{}
 	if viper.GetBool("opendistro.enable") {
@@ -60,6 +60,5 @@ func job() {
 		kibanaTenants = getKibanaTenants(esIndex)
 	}
 
-	log.Debug(kibanaTenants)
 	kibanaOpendistroSavedObjectBulkCreate(kibanaTenants)
 }

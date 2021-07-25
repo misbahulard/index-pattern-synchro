@@ -13,14 +13,30 @@ import (
 
 func Configure() error {
 	log.SetReportCaller(true)
-	log.SetFormatter(&log.JSONFormatter{
-		// FullTimestamp: true,
-		CallerPrettyfier: func(f *runtime.Frame) (function string, file string) {
-			fileName := f.File[strings.LastIndex(f.File, "/")+1:] + ":" + strconv.Itoa(f.Line)
-			fnName := f.Function[strings.LastIndex(f.Function, ".")+1:]
-			return fnName, fileName
-		},
-	})
+
+	if viper.GetString("log.type") == "json" {
+		log.SetFormatter(&log.JSONFormatter{
+			CallerPrettyfier: func(f *runtime.Frame) (function string, file string) {
+				fileName := f.File[strings.LastIndex(f.File, "/")+1:] + ":" + strconv.Itoa(f.Line)
+				fnName := f.Function[strings.LastIndex(f.Function, ".")+1:]
+				return fnName, fileName
+			},
+		})
+	} else {
+		if viper.GetString("log.type") != "text" && viper.GetString("log.type") != "json" {
+			fmt.Println("Undefined log type, fallback to 'text' type of logging.")
+		}
+
+		log.SetFormatter(&log.TextFormatter{
+			FullTimestamp: true,
+			DisableColors: true,
+			CallerPrettyfier: func(f *runtime.Frame) (function string, file string) {
+				fileName := f.File[strings.LastIndex(f.File, "/")+1:] + ":" + strconv.Itoa(f.Line)
+				fnName := f.Function[strings.LastIndex(f.Function, ".")+1:]
+				return fnName, fileName
+			},
+		})
+	}
 
 	if viper.GetBool("log.debug") {
 		log.SetLevel(log.DebugLevel)

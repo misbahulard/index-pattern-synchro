@@ -65,6 +65,7 @@ func generateConfig() {
 		Interval: "15m",
 		Log: config.Log{
 			Debug: false,
+			Type:  "text",
 			File: config.File{
 				Enable: false,
 				Path:   "default.log",
@@ -92,6 +93,18 @@ func generateConfig() {
 				Enable:   false,
 				Username: "elastic",
 				Password: "secret",
+			},
+		},
+		Xpack: config.Xpack{
+			Enable: false,
+			Spaces: []config.Space{
+				config.Space{Name: "global", Pattern: "*", Timestamp: "timestamp"},
+			},
+		},
+		Opendistro: config.Opendistro{
+			Enable: false,
+			Tenants: []config.Tenant{
+				config.Tenant{Name: "global", Pattern: "*", Timestamp: "timestamp"},
 			},
 		},
 	}
